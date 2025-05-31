@@ -30,40 +30,14 @@ import { Download } from "@mui/icons-material";
 const methods = ["GET", "POST", "PUT", "DELETE", "PATCH"];
 const authTypes = ["None", "Bearer Token", "Basic Auth", "API Key"];
 
-function syntaxHighlight(json) {
-  if (typeof json != "string") {
-    json = JSON.stringify(json, undefined, 2);
-  }
-  json = json
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
-  return json.replace(
-    /(\"(.*?)\")|\b(true|false|null)\b|(-?\d+(\.\d+)?)/g,
-    (match) => {
-      let cls = "number";
-      if (/^\".*\"$/.test(match)) {
-        if (/:$/.test(match)) {
-          cls = "key";
-        } else {
-          cls = "string";
-        }
-      } else if (/true|false/.test(match)) {
-        cls = "boolean";
-      } else if (/null/.test(match)) {
-        cls = "null";
-      }
-      return `<span class="json-${cls}">${match}</span>`;
-    }
-  );
-}
-
 export default function Home() {
+
+  // State variables
   const [method, setMethod] = useState("GET");
   const [url, setUrl] = useState("");
   const [body, setBody] = useState("");
   const [headers, setHeaders] = useState([{ key: "", value: "" }]);
-
+// Authentication
   const [authType, setAuthType] = useState("None");
   const [authValue, setAuthValue] = useState("");
   const [response, setResponse] = useState(null);
@@ -74,26 +48,25 @@ export default function Home() {
   const containerRef = useRef(null);
   const targetRef = useRef(null);
 
-  const scrollToTarget = () => {
-    targetRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
 
 
-
+// State for height and width of the editor
   const [height, setHeight] = useState(500); // default height in px
   const [width, setWidth] = useState(900);
 
-
+// Function to handle header input changes
   const handleHeaderChange = (index, field, value) => {
     const newHeaders = [...headers];
     newHeaders[index][field] = value;
     setHeaders(newHeaders);
   };
 
+  // Function to add a new header input
+
   const addHeader = () => {
     setHeaders([...headers, { key: "", value: "" }]);
   };
-
+// Function to remove a header input by index
   const removeHeader = (index) => {
     const newHeaders = headers.filter((_, i) => i !== index);
     setHeaders(newHeaders.length ? newHeaders : [{ key: "", value: "" }]);
@@ -101,7 +74,7 @@ export default function Home() {
 
 
 
-
+// Function to handle sending the request
 
   const handleSend = async () => {
     try {
@@ -149,7 +122,7 @@ export default function Home() {
       setResponse(error.response || { status: "Error", data: error.message });
     }
   };
-
+// Function to download the response data as JSON or XML
   const download = (type) => {
     const blob = new Blob([
       type === "json" ? JSON.stringify(response.data, null, 2) : response.data,
@@ -161,7 +134,7 @@ export default function Home() {
     link.download = `response.${type}`;
     link.click();
   };
-
+// Function to convert XML to JSON and download it
   const handleXmlToJson = () => {
     try {
       if (!response || !response.data) {
@@ -197,7 +170,7 @@ export default function Home() {
       setConvertedOutput("Invalid XML input or parse error.");
     }
   };
-
+// Function to convert JSON to XML and download it
   const handleJsonToXml = () => {
     console.log(response.data);
 
@@ -246,7 +219,7 @@ export default function Home() {
 
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4 }} ref={containerRef} >
+    <Container maxWidth="lg"  sx={{ mt: 4 }} ref={containerRef} >
       <Typography
         variant="h4"
         gutterBottom
@@ -296,14 +269,25 @@ export default function Home() {
             label="Request URL"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
-            fullWidth
+            fullWidth={false} // Make it non-full-width to allow resizing
             sx={{
               '& .MuiOutlinedInput-root': {
                 borderRadius: '12px',
+                resize: 'horizontal', // Allow horizontal resize
+                overflow: 'auto',
+                minWidth: '300px', // Optional: Minimum width
+                maxWidth: '100%',  // Optional: Max width
               },
+            }}
+            InputProps={{
+              style: {
+                resize: 'horizontal',
+                overflow: 'auto',
+              }
             }}
           />
         </Grid>
+
 
 
 
@@ -345,8 +329,8 @@ export default function Home() {
           />
         </Grid>
 
-        
-       
+
+
 
 
         {/* Send Button */}
@@ -372,8 +356,8 @@ export default function Home() {
           </Button>
         </Grid>
 
-         {/* Headers Input */}
-        
+        {/* Headers Input */}
+
         <Grid item xs={12} sx={{ mb: 3 }}>
           <Typography variant="h6" sx={{ mb: 1, mt: 2 }}>
             Request Headers
@@ -531,12 +515,23 @@ export default function Home() {
 
 
       {response && (
-        <Paper elevation={4} sx={{ mt: 4, p: 2 }} ref={4 === 4 ? targetRef : null} >
-          <Tabs value={tabIndex} onChange={(e, v) => setTabIndex(v)}>
-            <Tab label="Pretty" />
-            <Tab label="Raw" />
-            <Tab label="Headers" />
-            <Tab label="Status" />
+        <Paper elevation={4} sx={{ mt: 4, p: 2 }} ref={4 === 4 ? targetRef : null}  >
+          <Tabs
+            value={tabIndex}
+            onChange={(e, v) => setTabIndex(v)}
+            variant="fullWidth"
+            textColor="inherit"
+            TabIndicatorProps={{
+              style: {
+                background: ["#00bcd4", "#ab47bc", "#66bb6a", "#ef5350"][tabIndex],
+                height: 4,
+              },
+            }}
+          >
+            <Tab label="Pretty" sx={{ color: tabIndex === 0 ? "#00bcd4" : "black" }} />
+            <Tab label="Raw" sx={{ color: tabIndex === 1 ? "#ab47bc" : "black" }} />
+            <Tab label="Headers" sx={{ color: tabIndex === 2 ? "#66bb6a" : "#black" }} />
+            <Tab label="Status" sx={{ color: tabIndex === 3 ? "#ef5350" : "#black" }} />
           </Tabs>
           <Box sx={{ mt: 2 }}>
             {tabIndex === 0 && (
@@ -549,46 +544,29 @@ export default function Home() {
               ) :
 
                 <>
-                  <pre
-                    style={{
-                      background: "#f5f5f5",
-                      padding: 10,
-                      textAlign: "left",         // Align text left
-                      maxHeight: 300,            // Limit height (adjust as needed)
-                      overflowY: "auto",         // Add vertical scroll if content is long
-                      whiteSpace: "pre-wrap",    // Wrap long lines
-                      wordBreak: "break-word",   // Break long words
-                      margin: 0,
-                      borderRadius: 4,
-                    }}
-                  >
-                    <code
-                      dangerouslySetInnerHTML={{
-                        __html: syntaxHighlight(response.data),
-                      }}
-                    />
-                  </pre>
-
-                  {/* <Editor
+                  <Editor
                     language="json"
-                    value={response.data}
-                  
-                    onFocus={() => setIsFocused(true)}
-                    onBlur={() => setIsFocused(false)}
+                    value={
+                      typeof response.data === "string"
+                        ? response.data
+                        : JSON.stringify(response.data, null, 2)
+                    }
+                    onChange={() => { }}
                     options={{
                       minimap: { enabled: false },
                       fontSize: 14,
-                      fontFamily: "monospace",
+                      fontFamily: 'monospace',
                       formatOnPaste: true,
                       formatOnType: true,
                       automaticLayout: true,
                       scrollBeyondLastLine: false,
                       wordWrap: 'on',
-                      lineNumbers: "on",
+                      lineNumbers: 'on',
+                      readOnly: true, // read-only since it's just for viewing
                     }}
                     theme="vs-dark"
+                    height="300px"
                   />
- */}
 
                 </>
 
@@ -640,28 +618,101 @@ export default function Home() {
             )}
           </Box>
 
-          <Box sx={{ mt: 2, display: "flex", gap: 2 }}>
-            <Tooltip title="Download JSON">
-              <IconButton onClick={() => download("json")}><Download /></IconButton>
+          <Box
+            sx={{
+              mt: 4,
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 3,
+              alignItems: "center",
+              justifyContent: "flex-start",
+              p: 2,
+              background: "linear-gradient(to right, #0f2027, #203a43, #2c5364)",
+              borderRadius: 3,
+              boxShadow: 3,
+            }}
+          >
+            {/* Download Buttons */}
+            <Tooltip title="Download as JSON">
+              <Button
+                variant="contained"
+                startIcon={<Download />}
+                onClick={() => download("json")}
+                sx={{
+                  background: "linear-gradient(45deg, #00bcd4 30%, #2196f3 90%)",
+                  color: "#fff",
+                  fontWeight: 600,
+                  borderRadius: 2,
+                  px: 3,
+                  "&:hover": {
+                    background: "linear-gradient(45deg, #2196f3 30%, #00bcd4 90%)",
+                  },
+                }}
+              >
+                JSON
+              </Button>
             </Tooltip>
-            <Tooltip title="Download XML">
-              <IconButton onClick={() => download("xml")}><Download /></IconButton>
+
+            <Tooltip title="Download as XML">
+              <Button
+                variant="contained"
+                startIcon={<Download />}
+                onClick={() => download("xml")}
+                sx={{
+                  background: "linear-gradient(45deg, #ab47bc 30%, #8e24aa 90%)",
+                  color: "#fff",
+                  fontWeight: 600,
+                  borderRadius: 2,
+                  px: 3,
+                  "&:hover": {
+                    background: "linear-gradient(45deg, #8e24aa 30%, #ab47bc 90%)",
+                  },
+                }}
+              >
+                XML
+              </Button>
             </Tooltip>
 
-            <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
-              <Tooltip title="This feature works only for XML responses">
-                <Button variant="outlined" onClick={handleXmlToJson}>Convert XML to JSON</Button>
-              </Tooltip>
-              <Tooltip title="This feature works only for JSON responses">
-                <Button variant="outlined" onClick={handleJsonToXml}>Convert JSON to XML</Button>
+            {/* Convert Buttons */}
+            <Tooltip title="Convert only works for XML responses">
+              <Button
+                variant="outlined"
+                onClick={handleXmlToJson}
+                sx={{
+                  borderColor: "#81d4fa",
+                  color: "#81d4fa",
+                  fontWeight: 600,
+                  px: 3,
+                  "&:hover": {
+                    backgroundColor: "#81d4fa",
+                    color: "#000",
+                  },
+                }}
+              >
+                XML ➜ JSON
+              </Button>
+            </Tooltip>
 
-              </Tooltip>
-            </Box>
-
-
-
-
+            <Tooltip title="Convert only works for JSON responses">
+              <Button
+                variant="outlined"
+                onClick={handleJsonToXml}
+                sx={{
+                  borderColor: "#ce93d8",
+                  color: "#ce93d8",
+                  fontWeight: 600,
+                  px: 3,
+                  "&:hover": {
+                    backgroundColor: "#ce93d8",
+                    color: "#000",
+                  },
+                }}
+              >
+                JSON ➜ XML
+              </Button>
+            </Tooltip>
           </Box>
+
         </Paper>
       )}
       <style>
