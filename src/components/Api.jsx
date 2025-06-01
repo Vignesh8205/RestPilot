@@ -544,6 +544,11 @@ export default function Home() {
               ) :
 
                 <>
+
+                <Box
+             
+            >
+
                   <Editor
                     language="json"
                     value={
@@ -551,6 +556,7 @@ export default function Home() {
                         ? response.data
                         : JSON.stringify(response.data, null, 2)
                     }
+                    
                     onChange={() => { }}
                     options={{
                       minimap: { enabled: false },
@@ -563,10 +569,12 @@ export default function Home() {
                       wordWrap: 'on',
                       lineNumbers: 'on',
                       readOnly: true, // read-only since it's just for viewing
+                    
                     }}
                     theme="vs-dark"
                     height="300px"
                   />
+                </Box>
 
                 </>
 
